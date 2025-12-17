@@ -263,12 +263,12 @@ const LandingPage = ({ onGetStarted, allDishes = [] }) => {
                <h1 className="text-6xl md:text-7xl lg:text-8xl font-serif font-bold leading-[0.9]">
                  ORDER FOOD <br/> TO YOUR DOOR
                </h1>
-               <p className="text-gray-300 max-w-md text-base md:text-lg leading-relaxed">
+               <p className="text-gray-300 max-w-md text-lg leading-relaxed">
                  Discover culinary delights and find your favorite dish with our swift and savory food delivery service.
                </p>
                <button 
                  onClick={onGetStarted}
-                 className="bg-white text-black px-6 md:px-10 py-3 md:py-4 rounded-full font-bold hover:bg-orange-500 hover:text-white transition-colors duration-200 shadow-lg hover:shadow-xl mt-4 md:mt-6 text-base md:text-lg inline-block"
+                 className="bg-white text-black px-10 py-4 rounded-full font-bold hover:bg-orange-500 hover:text-white transition-all shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[0_0_20px_rgba(249,115,22,0.5)] mt-6 text-lg"
                >
                  Explore Menu
                </button>
@@ -1518,7 +1518,7 @@ const PaymentModal = ({
         <div className="w-full md:w-1/3 bg-gray-50 border-r border-gray-100 p-4 overflow-y-auto">
            <h3 className="font-bold text-gray-900 mb-4 px-2">Payment Options</h3>
            <div className="space-y-2">
-              {Object.values(PaymentMethod).filter(m => m !== PaymentMethod.RAZORPAY).map((m) => (
+              {Object.values(PaymentMethod).map((m) => (
                 <button
                   key={m}
                   onClick={() => { setMethod(m); setStatus('IDLE'); }}
@@ -2605,8 +2605,6 @@ const GroupOrderView = ({ onAddGroupToCart, restaurants = [], onStartOrder }) =>
   ]);
   const [newName, setNewName] = useState('');
   const [step, setStep] = useState('restaurant'); // 'restaurant' or 'dish'
-  const [activeMemberId, setActiveMemberId] = useState('1'); // Currently voting member
-  const [drawMessage, setDrawMessage] = useState(null);
   
   // Restaurant voting
   const handleRestaurantVote = (memberId, restaurantId) => {
@@ -2625,76 +2623,18 @@ const GroupOrderView = ({ onAddGroupToCart, restaurants = [], onStartOrder }) =>
     }
   };
 
-  // Determine restaurant winner with draw handling
+  // Determine restaurant winner
   const restaurantVotes = members.reduce((acc, m) => {
     if (m.restaurantVote) acc[m.restaurantVote] = (acc[m.restaurantVote] || 0) + 1;
     return acc;
   }, {});
   
-  const voteEntries = Object.entries(restaurantVotes).sort((a, b) => b[1] - a[1]);
-  const maxVotes = voteEntries.length > 0 ? voteEntries[0][1] : 0;
-  const winners = voteEntries.filter(([_, votes]) => votes === maxVotes);
-  
+  const winnerId = Object.keys(restaurantVotes).sort((a,b) => restaurantVotes[b] - restaurantVotes[a])[0];
   const allRestaurants = restaurants.length > 0 ? restaurants : MOCK_RESTAURANTS;
-  
-  // Store random winner for draws using ref (stable across renders, no re-renders)
-  const randomWinnerRef = useRef(null);
-  const previousWinnersKeyRef = useRef('');
-  
-  // Calculate winner (memoized to prevent re-renders)
-  const winnerData = useMemo(() => {
-    if (winners.length === 0) {
-      randomWinnerRef.current = null;
-      previousWinnersKeyRef.current = '';
-      return { winnerId: null, winnerRestaurant: null };
-    }
-    
-    let winnerId;
-    const winnersKey = winners.map(([id]) => id).sort().join(',');
-    
-    if (winners.length > 1) {
-      // Draw - check if winners changed, if so pick new random winner
-      if (previousWinnersKeyRef.current !== winnersKey || !randomWinnerRef.current) {
-        const randomIndex = Math.floor(Math.random() * winners.length);
-        randomWinnerRef.current = winners[randomIndex][0];
-        previousWinnersKeyRef.current = winnersKey;
-      }
-      winnerId = randomWinnerRef.current;
-    } else {
-      winnerId = winners[0][0];
-      randomWinnerRef.current = null;
-      previousWinnersKeyRef.current = '';
-    }
-    
-    const winnerRestaurant = allRestaurants.find(r => {
-      const rId = String(r._id || r.id);
-      return rId === String(winnerId);
-    });
-    
-    return { winnerId, winnerRestaurant };
-  }, [winners, allRestaurants]);
-  
-  const { winnerId, winnerRestaurant } = winnerData;
-  
-  // Handle draw message in useEffect to prevent infinite re-renders
-  useEffect(() => {
-    if (winners.length > 1 && winnerRestaurant) {
-      const selectedRestaurant = allRestaurants.find(r => {
-        const rId = String(r._id || r.id);
-        return rId === String(winnerId);
-      });
-      if (selectedRestaurant) {
-        setDrawMessage({
-          type: 'restaurant',
-          message: `Draw detected! Randomly selected: ${selectedRestaurant.name}`
-        });
-        const timer = setTimeout(() => setDrawMessage(null), 5000);
-        return () => clearTimeout(timer);
-      }
-    } else if (winners.length === 1) {
-      setDrawMessage(null);
-    }
-  }, [winners.length, winnerRestaurant, winnerId, allRestaurants]);
+  const winnerRestaurant = winnerId ? allRestaurants.find(r => {
+    const rId = String(r._id || r.id);
+    return rId === String(winnerId);
+  }) : null;
 
   // Check if all members have voted for restaurant
   const allVotedRestaurant = members.every(m => m.restaurantVote !== null);
@@ -2771,17 +2711,9 @@ const GroupOrderView = ({ onAddGroupToCart, restaurants = [], onStartOrder }) =>
              <h3 className="font-bold text-gray-900 mb-4">Group Members</h3>
              <div className="space-y-3 mb-6">
                 {members.map(m => (
-                  <div 
-                    key={m.id} 
-                    onClick={() => setActiveMemberId(m.id)}
-                    className={`flex justify-between items-center p-3 rounded-xl cursor-pointer transition-all ${
-                      activeMemberId === m.id ? 'bg-orange-50 border-2 border-orange-500' : 'bg-gray-50 border-2 border-transparent'
-                    }`}
-                  >
+                  <div key={m.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-xl">
                      <div className="flex items-center">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold mr-3 ${
-                          activeMemberId === m.id ? 'bg-orange-500 text-white' : 'bg-orange-100 text-orange-700'
-                        }`}>
+                        <div className="w-8 h-8 rounded-full bg-orange-100 text-orange-700 flex items-center justify-center font-bold mr-3">
                            {m.name[0]}
                         </div>
                         <span className="font-medium text-gray-900">{m.name}</span>
@@ -2822,23 +2754,16 @@ const GroupOrderView = ({ onAddGroupToCart, restaurants = [], onStartOrder }) =>
              {step === 'restaurant' ? (
                <>
                   <h3 className="font-bold text-gray-900 mb-4">Vote for Restaurant</h3>
-                  {drawMessage && drawMessage.type === 'restaurant' && (
-                    <div className="mb-4 p-3 bg-orange-100 border border-orange-300 rounded-xl text-orange-800 text-sm">
-                      <span className="font-semibold">🎲 {drawMessage.message}</span>
-                    </div>
-                  )}
                   <div className="space-y-3 max-h-80 overflow-y-auto pr-2">
                      {(restaurants.length > 0 ? restaurants : MOCK_RESTAURANTS).slice(0, 5).map(r => {
                         const restaurantId = String(r._id || r.id);
                         const voteCount = members.filter(m => String(m.restaurantVote) === restaurantId).length;
-                        const activeMember = members.find(m => m.id === activeMemberId);
-                        const isSelected = activeMember && String(activeMember.restaurantVote) === restaurantId;
                         return (
                           <div 
                              key={restaurantId} 
-                             onClick={() => handleRestaurantVote(activeMemberId, restaurantId)}
+                             onClick={() => handleRestaurantVote('1', restaurantId)}
                              className={`p-4 border rounded-xl cursor-pointer transition-all flex justify-between items-center ${
-                                isSelected ? 'border-orange-500 bg-orange-50' : 'hover:border-gray-300'
+                                String(members[0].restaurantVote) === restaurantId ? 'border-orange-500 bg-orange-50' : 'hover:border-gray-300'
                              }`}
                           >
                              <div>
@@ -2856,7 +2781,7 @@ const GroupOrderView = ({ onAddGroupToCart, restaurants = [], onStartOrder }) =>
                                    </div>
                                 )}
                                 <div className="w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center">
-                                   {isSelected && <div className="w-3 h-3 bg-orange-500 rounded-full"></div>}
+                                   {String(members[0].restaurantVote) === restaurantId && <div className="w-3 h-3 bg-orange-500 rounded-full"></div>}
                                 </div>
                              </div>
                           </div>
@@ -2879,14 +2804,12 @@ const GroupOrderView = ({ onAddGroupToCart, restaurants = [], onStartOrder }) =>
                      {winnerRestaurant.menu.slice(0, 10).map(dish => {
                         const dishId = String(dish._id || dish.id);
                         const voteCount = members.filter(m => String(m.dishVote) === dishId).length;
-                        const activeMember = members.find(m => m.id === activeMemberId);
-                        const isSelected = activeMember && String(activeMember.dishVote) === dishId;
                         return (
                           <div 
                              key={dishId} 
-                             onClick={() => handleDishVote(activeMemberId, dishId)}
+                             onClick={() => handleDishVote('1', dishId)}
                              className={`p-4 border rounded-xl cursor-pointer transition-all flex justify-between items-center ${
-                                isSelected ? 'border-blue-500 bg-blue-50' : 'hover:border-gray-300'
+                                String(members[0].dishVote) === dishId ? 'border-blue-500 bg-blue-50' : 'hover:border-gray-300'
                              }`}
                           >
                              <div className="flex-1">
@@ -2905,7 +2828,7 @@ const GroupOrderView = ({ onAddGroupToCart, restaurants = [], onStartOrder }) =>
                                    </div>
                                 )}
                                 <div className="w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center">
-                                   {isSelected && <div className="w-3 h-3 bg-blue-500 rounded-full"></div>}
+                                   {String(members[0].dishVote) === dishId && <div className="w-3 h-3 bg-blue-500 rounded-full"></div>}
                                 </div>
                              </div>
                           </div>
@@ -2914,6 +2837,19 @@ const GroupOrderView = ({ onAddGroupToCart, restaurants = [], onStartOrder }) =>
                   </div>
                </>
              ) : null}
+          </div>
+       </div>
+
+       {/* Step Indicator */}
+       <div className="mb-6 flex items-center justify-center gap-4">
+          <div className={`flex items-center gap-2 ${step === 'restaurant' ? 'text-orange-500' : 'text-gray-400'}`}>
+             <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${step === 'restaurant' ? 'bg-orange-500 text-white' : 'bg-gray-200'}`}>1</div>
+             <span className="font-medium">Choose Restaurant</span>
+          </div>
+          <div className="w-12 h-0.5 bg-gray-300"></div>
+          <div className={`flex items-center gap-2 ${step === 'dish' ? 'text-orange-500' : 'text-gray-400'}`}>
+             <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${step === 'dish' ? 'bg-orange-500 text-white' : 'bg-gray-200'}`}>2</div>
+             <span className="font-medium">Choose Dishes</span>
           </div>
        </div>
 
