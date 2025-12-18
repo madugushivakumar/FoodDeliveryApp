@@ -157,15 +157,17 @@ const Navbar = ({
         {/* Actions */}
         <div className="flex items-center space-x-4 flex-shrink-0">
           {user && (
-            <div className="hidden md:flex items-center gap-2 bg-gray-100 px-4 py-2 rounded-full">
-              <UserPlus size={18} className="text-gray-600" />
-              <span className="text-sm font-medium text-gray-700">{user.name || user.email}</span>
+            <div className="hidden md:flex items-center gap-2 bg-orange-50 px-4 py-2 rounded-full border border-orange-100">
+              <div className="bg-orange-500 rounded-full p-1.5">
+                <UserPlus size={16} className="text-white" />
+              </div>
+              <span className="text-sm font-bold text-gray-900">{user.name || user.email}</span>
             </div>
           )}
           {user && onLogout && (
             <button 
               onClick={onLogout}
-              className="hidden md:block px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full font-bold text-sm transition"
+              className="hidden md:block px-4 py-2 bg-black text-white rounded-full font-bold text-sm hover:bg-orange-500 transition shadow-lg"
             >
               Logout
             </button>
@@ -208,6 +210,22 @@ const Navbar = ({
          <NavButtonMobile active={currentView === 'group'} onClick={() => onViewChange('group')} icon={<Users size={20} />} />
          <NavButtonMobile active={currentView === 'wallet'} onClick={() => onViewChange('wallet')} icon={<Wallet size={20} />} />
        </div>
+       {user && onLogout && (
+         <div className="md:hidden px-4 pt-2 pb-2 border-t border-gray-100 flex items-center justify-between">
+           <div className="flex items-center gap-2 bg-orange-50 px-3 py-2 rounded-full border border-orange-100">
+             <div className="bg-orange-500 rounded-full p-1.5">
+               <UserPlus size={14} className="text-white" />
+             </div>
+             <span className="text-xs font-bold text-gray-900">{user.name || user.email}</span>
+           </div>
+           <button 
+             onClick={onLogout}
+             className="px-3 py-1.5 bg-black text-white rounded-full font-bold text-xs hover:bg-orange-500 transition shadow-lg"
+           >
+             Logout
+           </button>
+         </div>
+       )}
     </div>
   </nav>
 );
@@ -253,22 +271,18 @@ const LandingPage = ({ onGetStarted, allDishes = [], onOpenAuth, user, onLogout 
            </div>
         </div>
         <div className="flex gap-4 md:gap-6 items-center">
-           {!user && (
-             <>
-               <button 
-                 onClick={onOpenAuth}
-                 className="hidden md:block px-6 py-2.5 bg-white/10 hover:bg-white/20 border border-white/20 rounded-full font-bold text-sm transition"
-               >
-                 Sign In
-               </button>
-               <button 
-                 onClick={onOpenAuth}
-                 className="px-4 md:px-6 py-2.5 bg-orange-500 hover:bg-orange-600 rounded-full font-bold text-sm transition shadow-lg"
-               >
-                 Sign Up
-               </button>
-             </>
-           )}
+           <button 
+             onClick={onOpenAuth}
+             className="hidden md:block px-6 py-2.5 bg-white/10 hover:bg-white/20 border border-white/20 rounded-full font-bold text-sm transition text-white"
+           >
+             Sign In
+           </button>
+           <button 
+             onClick={onOpenAuth}
+             className="px-4 md:px-6 py-2.5 bg-orange-500 hover:bg-orange-600 rounded-full font-bold text-sm transition shadow-lg text-white"
+           >
+             Sign Up
+           </button>
            <Search className="w-8 h-8 cursor-pointer hover:text-orange-400 transition"/>
            <Heart className="w-8 h-8 cursor-pointer hover:text-orange-400 transition"/>
            <div onClick={onGetStarted} className="cursor-pointer hover:text-orange-400 transition relative">
@@ -3634,7 +3648,11 @@ export function App() {
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
       try {
-        setUser(JSON.parse(savedUser));
+        const userData = JSON.parse(savedUser);
+        setUser(userData);
+        // If user is logged in, go directly to project page
+        setShowLanding(false);
+        setCurrentView('home');
       } catch (e) {
         // Invalid user data, clear it
         localStorage.removeItem('user');
@@ -3965,6 +3983,8 @@ export function App() {
         onChangeLocation={() => setLocationModalOpen(true)}
         onBackToLanding={() => setShowLanding(true)}
         isGenerating={isGeneratingDish}
+        user={user}
+        onLogout={handleLogout}
       />
 
       <main>
