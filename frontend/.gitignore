@@ -41,11 +41,6 @@ Desktop.ini
 *.swp
 *.swo
 *~
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
 
 # Testing
 coverage/
@@ -55,3 +50,4 @@ coverage/
 *.tmp
 *.temp
 .cache/
+
