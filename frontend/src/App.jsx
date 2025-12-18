@@ -59,7 +59,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 
 import { MOCK_COUPONS, HealthCondition, Tag, PaymentMethod } from './constants';
 import { MOCK_RESTAURANTS, MOCK_DISHES } from './mockData';
-import { getFoodRecommendation, generateDishFromQuery, getRestaurants, getDishes, generateDishImage } from './services/api';
+import { getFoodRecommendation, generateDishFromQuery, getRestaurants, getDishes, generateDishImage, loginUser, registerUser } from './services/api';
 
 // --- Helper Functions ---
 
@@ -220,7 +220,7 @@ const NavButtonMobile = ({ active, onClick, icon }) => (
 
 // --- Landing Page ---
 
-const LandingPage = ({ onGetStarted, allDishes = [] }) => {
+const LandingPage = ({ onGetStarted, allDishes = [], onOpenAuth, user }) => {
   return (
     <div className="font-sans text-gray-800 bg-white overflow-x-hidden">
       {/* Navbar */}
@@ -236,7 +236,30 @@ const LandingPage = ({ onGetStarted, allDishes = [] }) => {
              <button onClick={onGetStarted} className="hover:text-orange-400 transition">Promotion</button>
            </div>
         </div>
-        <div className="flex gap-6 items-center">
+        <div className="flex gap-4 md:gap-6 items-center">
+           {user ? (
+             <div className="flex items-center gap-3">
+               <div className="hidden md:flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full">
+                 <UserPlus size={18} />
+                 <span className="text-sm font-medium">{user.name || user.email}</span>
+               </div>
+             </div>
+           ) : (
+             <>
+               <button 
+                 onClick={onOpenAuth}
+                 className="hidden md:block px-6 py-2.5 bg-white/10 hover:bg-white/20 border border-white/20 rounded-full font-bold text-sm transition"
+               >
+                 Sign In
+               </button>
+               <button 
+                 onClick={onOpenAuth}
+                 className="px-4 md:px-6 py-2.5 bg-orange-500 hover:bg-orange-600 rounded-full font-bold text-sm transition shadow-lg"
+               >
+                 Sign Up
+               </button>
+             </>
+           )}
            <Search className="w-8 h-8 cursor-pointer hover:text-orange-400 transition"/>
            <Heart className="w-8 h-8 cursor-pointer hover:text-orange-400 transition"/>
            <div onClick={onGetStarted} className="cursor-pointer hover:text-orange-400 transition relative">
@@ -263,15 +286,17 @@ const LandingPage = ({ onGetStarted, allDishes = [] }) => {
                <h1 className="text-6xl md:text-7xl lg:text-8xl font-serif font-bold leading-[0.9]">
                  ORDER FOOD <br/> TO YOUR DOOR
                </h1>
-               <p className="text-gray-300 max-w-md text-base md:text-lg leading-relaxed">
+               <p className="text-gray-300 max-w-md text-base md:text-lg leading-relaxed mb-6 md:mb-8">
                  Discover culinary delights and find your favorite dish with our swift and savory food delivery service.
                </p>
-               <button 
-                 onClick={onGetStarted}
-                 className="bg-white text-black px-6 md:px-10 py-3 md:py-4 rounded-full font-bold hover:bg-orange-500 hover:text-white transition-colors duration-200 shadow-lg hover:shadow-xl mt-4 md:mt-6 text-base md:text-lg inline-block"
-               >
-                 Explore Menu
-               </button>
+               <div className="mt-6 md:mt-8">
+                 <button 
+                   onClick={onGetStarted}
+                   className="bg-white text-black px-8 md:px-12 py-4 md:py-5 rounded-full font-bold hover:bg-orange-500 hover:text-white transition-colors duration-200 shadow-lg hover:shadow-xl text-base md:text-lg"
+                 >
+                   Explore Menu
+                 </button>
+               </div>
             </div>
             
             <div className="relative flex justify-center animate-in zoom-in duration-1000">
@@ -3326,6 +3351,212 @@ const HomeView = ({
   );
 };
 
+const AuthModal = ({ isOpen, onClose, onLoginSuccess }) => {
+  const [isLogin, setIsLogin] = useState(true);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  if (!isOpen) return null;
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      if (isLogin) {
+        const response = await loginUser({ email, password });
+        if (response.data) {
+          localStorage.setItem('userId', response.data.userId);
+          localStorage.setItem('user', JSON.stringify(response.data.user));
+          onLoginSuccess(response.data.user);
+          onClose();
+        }
+      } else {
+        const response = await registerUser({ name, email, password, phone });
+        if (response.data) {
+          // Auto login after registration
+          const loginResponse = await loginUser({ email, password });
+          if (loginResponse.data) {
+            localStorage.setItem('userId', loginResponse.data.userId);
+            localStorage.setItem('user', JSON.stringify(loginResponse.data.user));
+            onLoginSuccess(loginResponse.data.user);
+            onClose();
+          }
+        }
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || (isLogin ? 'Login failed' : 'Registration failed'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose}></div>
+      <div className="relative bg-[#0f172a] rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95">
+        <button 
+          onClick={onClose} 
+          className="absolute top-4 right-4 text-gray-400 hover:text-white transition z-10"
+        >
+          <X size={24} />
+        </button>
+
+        <div className="p-8">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-orange-500 rounded-full mb-4">
+              <Utensils size={32} className="text-white" />
+            </div>
+            <h2 className="text-3xl font-serif font-bold text-white mb-2">
+              {isLogin ? 'Welcome Back' : 'Create Account'}
+            </h2>
+            <p className="text-gray-400 text-sm">
+              {isLogin ? 'Sign in to continue ordering' : 'Join us to start ordering delicious food'}
+            </p>
+          </div>
+
+          {/* Tabs */}
+          <div className="flex gap-2 mb-6 bg-white/5 p-1 rounded-xl">
+            <button
+              onClick={() => {
+                setIsLogin(true);
+                setError('');
+              }}
+              className={`flex-1 py-2.5 rounded-lg font-bold transition ${
+                isLogin
+                  ? 'bg-orange-500 text-white'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              Sign In
+            </button>
+            <button
+              onClick={() => {
+                setIsLogin(false);
+                setError('');
+              }}
+              className={`flex-1 py-2.5 rounded-lg font-bold transition ${
+                !isLogin
+                  ? 'bg-orange-500 text-white'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              Sign Up
+            </button>
+          </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className="mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-xl text-red-300 text-sm">
+              {error}
+            </div>
+          )}
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {!isLogin && (
+              <div>
+                <label className="block text-gray-300 text-sm font-medium mb-2">
+                  Full Name
+                </label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required={!isLogin}
+                  className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  placeholder="John Doe"
+                />
+              </div>
+            )}
+
+            <div>
+              <label className="block text-gray-300 text-sm font-medium mb-2">
+                Email
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                placeholder="you@example.com"
+              />
+            </div>
+
+            {!isLogin && (
+              <div>
+                <label className="block text-gray-300 text-sm font-medium mb-2">
+                  Phone
+                </label>
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  required={!isLogin}
+                  className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  placeholder="+91 1234567890"
+                />
+              </div>
+            )}
+
+            <div>
+              <label className="block text-gray-300 text-sm font-medium mb-2">
+                Password
+              </label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                placeholder="••••••••"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-orange-500 text-white py-3.5 rounded-xl font-bold hover:bg-orange-600 transition shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {loading ? (
+                <>
+                  <Loader2 size={20} className="animate-spin" />
+                  {isLogin ? 'Signing in...' : 'Creating account...'}
+                </>
+              ) : (
+                isLogin ? 'Sign In' : 'Create Account'
+              )}
+            </button>
+          </form>
+
+          {/* Footer */}
+          <div className="mt-6 text-center">
+            <p className="text-gray-400 text-sm">
+              {isLogin ? "Don't have an account? " : 'Already have an account? '}
+              <button
+                onClick={() => {
+                  setIsLogin(!isLogin);
+                  setError('');
+                }}
+                className="text-orange-500 hover:text-orange-400 font-bold"
+              >
+                {isLogin ? 'Sign Up' : 'Sign In'}
+              </button>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // --- Main App Export ---
 
 export function App() {
@@ -3337,9 +3568,11 @@ export function App() {
   const [locationModalOpen, setLocationModalOpen] = useState(false);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [menuModalOpen, setMenuModalOpen] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
   const [selectedRestaurant, setSelectedRestaurant] = useState(null);
   const [selectedDish, setSelectedDish] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [user, setUser] = useState(null);
   
   // App State - API Data
   // Initialize with mock data immediately - no empty state
@@ -3391,6 +3624,30 @@ export function App() {
     // Location can be manually set via the location modal
     // Auto-detection removed to prevent any blocking operations
   }, []);
+
+  // Load user from localStorage on app start
+  useEffect(() => {
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch (e) {
+        // Invalid user data, clear it
+        localStorage.removeItem('user');
+        localStorage.removeItem('userId');
+      }
+    }
+  }, []);
+
+  const handleLoginSuccess = (userData) => {
+    setUser(userData);
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    localStorage.removeItem('user');
+    localStorage.removeItem('userId');
+  };
 
 
   // Fetch restaurants and dishes from API with immediate fallback to mock data
@@ -3668,7 +3925,21 @@ export function App() {
   // No loading state blocking - app always renders immediately
 
   if (showLanding) {
-     return <LandingPage onGetStarted={handleGetStarted} allDishes={allDishes} />;
+     return (
+       <>
+         <LandingPage 
+           onGetStarted={handleGetStarted} 
+           allDishes={allDishes} 
+           onOpenAuth={() => setAuthModalOpen(true)}
+           user={user}
+         />
+         <AuthModal 
+           isOpen={authModalOpen}
+           onClose={() => setAuthModalOpen(false)}
+           onLoginSuccess={handleLoginSuccess}
+         />
+       </>
+     );
   }
 
   return (
@@ -3767,6 +4038,12 @@ export function App() {
       <LocationModal 
         isOpen={locationModalOpen}
         onLocationSelect={handleLocationSelect}
+      />
+
+      <AuthModal 
+        isOpen={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        onLoginSuccess={handleLoginSuccess}
       />
     </div>
   );
