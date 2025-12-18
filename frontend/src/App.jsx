@@ -292,7 +292,7 @@ const LandingPage = ({ onGetStarted, allDishes = [], onOpenAuth, user, onLogout 
       </nav>
 
       {/* Hero Section */}
-      <div className="relative bg-[#0f172a] text-white min-h-screen flex items-center pt-20 overflow-hidden">
+      <div className="relative bg-[#0f172a] text-white min-h-screen flex items-center pt-20 overflow-hidden pb-32 md:pb-40">
          {/* Background Overlay */}
          <div className="absolute inset-0 z-0">
             <img 
@@ -304,7 +304,7 @@ const LandingPage = ({ onGetStarted, allDishes = [], onOpenAuth, user, onLogout 
          </div>
          
          <div className="w-full max-w-[95%] 2xl:max-w-[1800px] mx-auto px-6 md:px-12 relative z-10 grid md:grid-cols-2 gap-12 items-center">
-            <div className="space-y-6 md:pr-12 animate-in slide-in-from-left duration-700">
+            <div className="space-y-6 md:pr-12 animate-in slide-in-from-left duration-700 relative z-30">
                <h3 className="text-orange-500 font-bold tracking-[0.2em] text-sm uppercase">Find Your Favorite Dish</h3>
                <h1 className="text-6xl md:text-7xl lg:text-8xl font-serif font-bold leading-[0.9]">
                  ORDER FOOD <br/> TO YOUR DOOR
@@ -314,7 +314,7 @@ const LandingPage = ({ onGetStarted, allDishes = [], onOpenAuth, user, onLogout 
                </p>
                <button 
                  onClick={onGetStarted}
-                 className="bg-white text-black px-8 md:px-12 py-4 md:py-5 rounded-full font-bold hover:bg-orange-500 hover:text-white transition-colors duration-200 shadow-lg hover:shadow-xl text-base md:text-lg mt-6 md:mt-8"
+                 className="bg-white text-black px-8 md:px-12 py-4 md:py-5 rounded-full font-bold hover:bg-orange-500 hover:text-white transition-colors duration-200 shadow-lg hover:shadow-xl text-base md:text-lg mt-6 md:mt-8 relative z-30"
                >
                  Explore Menu
                </button>
@@ -340,7 +340,7 @@ const LandingPage = ({ onGetStarted, allDishes = [], onOpenAuth, user, onLogout 
          </div>
 
          {/* Bottom Wave */}
-         <div className="absolute bottom-0 left-0 w-full leading-none z-20">
+         <div className="absolute bottom-0 left-0 w-full leading-none z-10 pointer-events-none">
             <svg viewBox="0 0 1440 320" className="w-full h-24 md:h-48 block" preserveAspectRatio="none">
               <path fill="#ffffff" fillOpacity="1" d="M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,224C672,245,768,267,864,250.7C960,235,1056,181,1152,165.3C1248,149,1344,171,1392,181.3L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
             </svg>
