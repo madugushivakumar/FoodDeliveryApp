@@ -1,10 +1,8 @@
----
-
 #  NutriDelish
 
 **NutriDelish** is a full-stack food delivery application that allows users to browse restaurants and dishes, place orders, and track delivery — built with a modern MERN-like stack. The project includes a **frontend web app** and a **backend API** to handle authentication, food data, and order management.
 
----
+
 
 ##  Demo & Links
 
