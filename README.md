@@ -1,20 +1,20 @@
+---
 
-
-# NutriDelish
+#  NutriDelish
 
 **NutriDelish** is a full-stack food delivery application that allows users to browse restaurants and dishes, place orders, and track delivery — built with a modern MERN-like stack. The project includes a **frontend web app** and a **backend API** to handle authentication, food data, and order management.
 
+---
 
+##  Demo & Links
 
-## Demo & Links
-
-* **Live Website:** [https://food-delivey-app-yi24.vercel.app/](https://food-delivey-app-yi24.vercel.app/)
-* **Demo Video:** [https://youtu.be/DxwOWqCo354](https://youtu.be/DxwOWqCo354)
-* **GitHub Repository:** [https://github.com/madugushivakumar/NutriDelish](https://github.com/madugushivakumar/NutriDelish) ([GitHub][1])
+*  **Live Website:** [https://food-delivey-app-yi24.vercel.app/](https://food-delivey-app-yi24.vercel.app/)
+*  **Demo Video:** [https://youtu.be/DxwOWqCo354](https://youtu.be/DxwOWqCo354)
+*  **GitHub Repository:** [https://github.com/madugushivakumar/NutriDelish](https://github.com/madugushivakumar/NutriDelish) ([GitHub][1])
 
 ---
 
-## Overview
+##  Overview
 
 NutriDelish provides:
 
@@ -23,11 +23,11 @@ NutriDelish provides:
 * Backend API to manage data
 * Demo available online with video walkthrough
 
-*(This description is based on repository metadata + standard food delivery app functionality.)* ([GitHub][1])
+
 
 ---
 
-## Project Structure
+##  Project Structure
 
 ```
 NutriDelish/
@@ -64,11 +64,10 @@ NutriDelish/
 └── metadata.json
 ```
 
-*(Structure based on the repository’s folders.)* ([GitHub][1])
 
 ---
 
-## Prerequisites
+##  Prerequisites
 
 Make sure you have installed:
 
@@ -78,12 +77,12 @@ Make sure you have installed:
 
 ---
 
-## Installation
+##  Installation
 
 Clone the repo:
 
 ```bash
-git clone https://github.com/madugushivakumar/NutriDelish.git
+git clone https://github.com/ShivasaiCEng/NutriDelish.git
 cd NutriDelish
 ```
 
@@ -109,7 +108,7 @@ npm install
 
 ---
 
-## Running the Application
+##  Running the Application
 
 ### Start Backend Server
 
@@ -131,7 +130,7 @@ npm run dev
 
 ---
 
-## Environment Variables
+##  Environment Variables
 
 ### Backend (`backend/.env`)
 
@@ -143,21 +142,23 @@ MONGO_URI=your_mongodb_connection_string
 JWT_SECRET=your_jwt_secret
 ```
 
-*(Adapt values for authentication and database.)*
 
 ---
 
-## Features
+##  Features
 
-* Browse restaurants & menus
-* Add items to cart
-* Place orders
-* Responsive web UI
-* Backend API for managing data
+*  Browse restaurants & menus
+*  Add items to cart
+*  Place orders
+*  Responsive web UI
+*  Backend API for managing data
+*  group ordering via voting
+*  Disease-based filtering
+*  Mood based food reccomendation
 
 ---
 
-## Tech Stack
+##  Tech Stack
 
 **Frontend:**
 
@@ -170,24 +171,3 @@ JWT_SECRET=your_jwt_secret
 * Node.js
 * Express.js
 * MongoDB / Mongoose
-  *(Typical for projects like this — adjust if project uses SQL.)*
-
----
-
-## License
-
-Distributed under the **MIT License**.
-
----
-
-### Optional Add-Ons
-
-I can also generate:
-
-Summary for your **resume / LinkedIn**
-API documentation section
-Screenshots section for README
-
-Just ask! 
-
-[1]: https://github.com/madugushivakumar/NutriDelish "GitHub - madugushivakumar/NutriDelish: Demo video: https://youtu.be/DxwOWqCo354"
